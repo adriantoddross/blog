@@ -1,10 +1,17 @@
 import matter from "gray-matter";
 import ReactMarkdown from "react-markdown";
+import path from "path";
+import { readdirSync } from "fs";
 
 export default async function Home({ params }: { params: { slug: string } }) {
   const { slug } = params;
   const { frontmatter, markdownBody } = await getMarkdownFile(slug);
   const { author, date, tags, title } = frontmatter;
+
+  const blogPostsPath = path.resolve(process.cwd(), "./src/posts/2024");
+  const files = readdirSync(blogPostsPath, { recursive: true });
+
+  console.log(files);
 
   return (
     <main>
@@ -26,6 +33,8 @@ export default async function Home({ params }: { params: { slug: string } }) {
       markdownBody: data.content,
     };
   }
+
+  function getFileNames() {}
 }
 
 // https://tina.io/blog/simple-markdown-blog-nextjs/
