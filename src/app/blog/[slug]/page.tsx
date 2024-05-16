@@ -1,29 +1,30 @@
 import matter from "gray-matter";
+import ReactMarkdown from "react-markdown";
 
 export default async function Home({ params }: { params: { slug: string } }) {
   const { slug } = params;
-
-  console.log(await getMarkdownFile(slug));
+  const { frontmatter, markdownBody } = await getMarkdownFile(slug);
+  const { author, date, tags, title } = frontmatter;
 
   return (
     <main>
-      <h1>Hello, world!</h1>
+      <h1>{title}</h1>
+      <p>{date}</p>
+      <p>{tags}</p>
+      <p>{author}</p>
       <p>Slug: {slug}</p>
+      <ReactMarkdown>{markdownBody}</ReactMarkdown>
     </main>
   );
 
   async function getMarkdownFile(blogSlug: string) {
-    // "use server";
-
-    // get slug from context
-
     const content = await import(`../../../posts/2024/${blogSlug}.md`);
     const data = matter(content.default);
 
-    return data.data;
-
-    // import gray matter config
-    // return props: title, frontmatter and markdown
+    return {
+      frontmatter: data.data,
+      markdownBody: data.content,
+    };
   }
 }
 
