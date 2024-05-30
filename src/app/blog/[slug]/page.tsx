@@ -2,6 +2,7 @@ import matter from "gray-matter";
 import ReactMarkdown from "react-markdown";
 import path from "path";
 import { readdirSync, lstatSync } from "fs";
+import { notFound } from "next/navigation";
 
 export async function generateStaticParams() {
   const blogPostsPath = path.resolve(process.cwd(), "./src/posts/");
@@ -40,15 +41,17 @@ export default async function Home({ params }: { params: { slug: string } }) {
 }
 
 async function getMarkdownFile(blogSlug: string) {
-  const content = await import(`../../../posts/2024/${blogSlug}.md`);
-  const data = matter(content.default);
+  try {
+    const content = await import(`../../../posts/2024/${blogSlug}.md`);
+    const data = matter(content.default);
 
-  // TODO: throw 404 page for bad slug
-
-  return {
-    frontmatter: data.data,
-    markdownBody: data.content,
-  };
+    return {
+      frontmatter: data.data,
+      markdownBody: data.content,
+    };
+  } catch (error) {
+    notFound();
+  }
 }
 
 function generatePostSlugs(folderPath: string) {
