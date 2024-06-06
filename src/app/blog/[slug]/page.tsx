@@ -1,20 +1,12 @@
 import matter from "gray-matter";
 import ReactMarkdown from "react-markdown";
-import path from "path";
-import { readdirSync, lstatSync } from "fs";
 import { notFound } from "next/navigation";
-
-interface MarkdownFileProps {
-  default: {
-    data: { [key: string]: string };
-    content: string;
-  };
-}
-
-interface GetMarkdownFileProps {
-  frontmatter: { [key: string]: string };
-  markdownBody: string;
-}
+import {
+  GetMarkdownFileProps,
+  MarkdownFileProps,
+  blogPostsPath,
+  generateBlogPostUrls,
+} from "./helpers";
 
 export async function generateStaticParams() {
   const slugs = generateBlogPostUrls(blogPostsPath);
@@ -73,28 +65,4 @@ async function getMarkdownFile(
   } catch (error) {
     return notFound();
   }
-}
-
-const blogPostsPath = path.resolve(process.cwd(), "./src/posts/");
-
-function isFile(fileName: string) {
-  return lstatSync(fileName).isFile();
-}
-
-function formatPathAsUrl(filePath: string, fileType: string) {
-  return path.basename(filePath, fileType).replace(/ /g, "-");
-}
-
-function getBlogPosts(folderPath: string) {
-  return readdirSync(folderPath, { recursive: true })
-    .map((fileName: string | Buffer) => {
-      return path.join(folderPath, fileName.toString());
-    })
-    .filter(isFile);
-}
-
-function generateBlogPostUrls(folderPath: string) {
-  return getBlogPosts(folderPath).map((filePath: string) => {
-    return formatPathAsUrl(filePath, ".md").replace(/ /g, "-");
-  });
 }
