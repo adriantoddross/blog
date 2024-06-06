@@ -6,47 +6,63 @@ import { notFound } from "next/navigation";
 
 export async function generateStaticParams() {
   const slugs = generateBlogPostUrls(blogPostsPath);
-
   return slugs.map((slug: string) => {
     return { slug };
   });
 }
 
-export default async function Home({ params }: { params: { slug: string } }) {
+export default async function BlogPost({
+  params,
+}: {
+  params: { slug: string };
+}) {
   // guide: https://tina.io/blog/simple-markdown-blog-nextjs/
 
   const { slug } = params;
-  const { frontmatter, markdownBody } = await getMarkdownFile(slug);
-  const { author, date, tags, title } = frontmatter;
+  const markdownFile = await getMarkdownFile(slug);
 
   return (
     <main>
-      <h1>{title}</h1>
-      <p>{date}</p>
-      <p>{tags}</p>
-      <p>{author}</p>
-      <p>Slug: {slug}</p>
-      <ReactMarkdown>{markdownBody}</ReactMarkdown>
+      {markdownFile?.frontmatter ? (
+        <>
+          <h1>{markdownFile.frontmatter.title}</h1>
+          <p>{markdownFile.frontmatter.date}</p>
+          <p>{markdownFile.frontmatter.tags}</p>
+          <p>{markdownFile.frontmatter.author}</p>
+          <p>Slug: {slug}</p>
+        </>
+      ) : null}
+
+      {markdownFile?.markdownBody ? (
+        <ReactMarkdown>{markdownFile.markdownBody}</ReactMarkdown>
+      ) : null}
     </main>
   );
 }
 
-async function getMarkdownFile(slug: string) {
-  const blogPostPaths = generateBlogsMap(blogPostsPath);
-  console.log("generateBlogsMap", blogPostPaths.get(slug));
-
+async function getMarkdownFile(slug: string): Promise<null | {
+  frontmatter: { [key: string]: string };
+  markdownBody: string;
+}> {
   try {
-    const markdownFile = await import(`../../../posts/2024/${slug}.md`);
-    const { data, content } = matter(markdownFile.default);
+    return await import(`../../../posts/2024/${slug}.md`).then(
+      (importedFile: {
+        default: {
+          data: { [key: string]: string };
+          content: string;
+        };
+      }) => {
+        const { data, content } = matter(importedFile?.default);
 
-    if (data && content) {
-      return {
-        frontmatter: data,
-        markdownBody: content,
-      };
-    }
-
-    return null;
+        if (data && content) {
+          return {
+            frontmatter: data,
+            markdownBody: content,
+          };
+        }
+        return null;
+      }
+    );
   } catch (error) {
     return notFound();
   }
@@ -74,18 +90,4 @@ function generateBlogPostUrls(folderPath: string) {
   return getBlogPosts(folderPath).map((filePath: string) => {
     return formatPathAsUrl(filePath, ".md").replace(/ /g, "-");
   });
-}
-
-function generateBlogsMap(folderPath: string) {
-  const blogsMap: Map<string, string> = new Map();
-  const blogPostPaths = getBlogPosts(folderPath);
-
-  blogPostPaths.forEach((filePath) => {
-    blogsMap.set(
-      formatPathAsUrl(filePath, ".md"),
-      path.relative(folderPath, filePath.toString())
-    );
-  });
-
-  return blogsMap;
 }
