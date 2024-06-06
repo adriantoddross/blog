@@ -5,5 +5,5 @@
     "@thoughtbot/eslint-config/typescript",
     "plugin:markdown/recommended-legacy"
   ],
-  "include": ["**/*.mjs"]
+  "ignorePatterns": ["next.config.mjs"]
 }
