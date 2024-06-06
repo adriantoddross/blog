@@ -15,9 +15,6 @@ export async function generateStaticParams() {
 export default async function Home({ params }: { params: { slug: string } }) {
   // guide: https://tina.io/blog/simple-markdown-blog-nextjs/
 
-  const blogPostPaths = generateBlogsMap(blogPostsPath);
-  console.log("generateBlogsMap", blogPostPaths.get(params.slug));
-
   const { slug } = params;
   const { frontmatter, markdownBody } = await getMarkdownFile(slug);
   const { author, date, tags, title } = frontmatter;
@@ -35,19 +32,27 @@ export default async function Home({ params }: { params: { slug: string } }) {
 }
 
 async function getMarkdownFile(slug: string) {
+  const blogPostPaths = generateBlogsMap(blogPostsPath);
+  console.log("generateBlogsMap", blogPostPaths.get(slug));
+
   try {
-    // const blogPostPaths = generateBlogsMap(blogPostsPath);
-    // const content = await import(`${blogPostPaths.get(slug)}`);
-    const content = await import(`../../../posts/2024/${slug}.md`);
+    const markdownFile = await import(`../../../posts/2024/${slug}.md`);
+    // TODO: Dynamic import path?
+    // Import fails when using ternary statements
 
-    const data = matter(content.default);
+    const markdownContent = matter(markdownFile.default);
+    const { data, content } = markdownContent;
 
-    return {
-      frontmatter: data.data,
-      markdownBody: data.content,
-    };
+    if (data && content) {
+      return {
+        frontmatter: data,
+        markdownBody: content,
+      };
+    }
+
+    return null;
   } catch (error) {
-    notFound();
+    return notFound();
   }
 }
 
