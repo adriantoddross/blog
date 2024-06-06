@@ -37,11 +37,7 @@ async function getMarkdownFile(slug: string) {
 
   try {
     const markdownFile = await import(`../../../posts/2024/${slug}.md`);
-    // TODO: Dynamic import path?
-    // Import fails when using ternary statements
-
-    const markdownContent = matter(markdownFile.default);
-    const { data, content } = markdownContent;
+    const { data, content } = matter(markdownFile.default);
 
     if (data && content) {
       return {
