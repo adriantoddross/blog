@@ -4,6 +4,18 @@ import path from "path";
 import { readdirSync, lstatSync } from "fs";
 import { notFound } from "next/navigation";
 
+interface MarkdownFileProps {
+  default: {
+    data: { [key: string]: string };
+    content: string;
+  };
+}
+
+interface GetMarkdownFileProps {
+  frontmatter: { [key: string]: string };
+  markdownBody: string;
+}
+
 export async function generateStaticParams() {
   const slugs = generateBlogPostUrls(blogPostsPath);
   return slugs.map((slug: string) => {
@@ -16,8 +28,6 @@ export default async function BlogPost({
 }: {
   params: { slug: string };
 }) {
-  // guide: https://tina.io/blog/simple-markdown-blog-nextjs/
-
   const { slug } = params;
   const markdownFile = await getMarkdownFile(slug);
 
@@ -40,18 +50,15 @@ export default async function BlogPost({
   );
 }
 
-async function getMarkdownFile(slug: string): Promise<null | {
-  frontmatter: { [key: string]: string };
-  markdownBody: string;
-}> {
+async function getMarkdownFile(
+  slug: string
+): Promise<GetMarkdownFileProps | null> {
   try {
+    // TODO: Rename posts folder, remove 2024
+    // Add date to MarkdownFileProps type
+
     return await import(`../../../posts/2024/${slug}.md`).then(
-      (importedFile: {
-        default: {
-          data: { [key: string]: string };
-          content: string;
-        };
-      }) => {
+      (importedFile: MarkdownFileProps) => {
         const { data, content } = matter(importedFile?.default);
 
         if (data && content) {
