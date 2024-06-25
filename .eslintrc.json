@@ -2,6 +2,8 @@
   "extends": [
     "next/core-web-vitals",
     "@thoughtbot/eslint-config",
-    "@thoughtbot/eslint-config/typescript"
-  ]
+    "@thoughtbot/eslint-config/typescript",
+    "plugin:markdown/recommended-legacy"
+  ],
+  "ignorePatterns": ["next.config.mjs"]
 }
